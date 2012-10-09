@@ -97,7 +97,7 @@ class ReportGenerator(GeraldoObject):
 
         # Initializes pages
         self._is_first_page = True
- 
+
     def render_border(self, borders_dict, rect_dict):
         """Renders a border in the coordinates setted in the rect."""
         b_all = borders_dict.get('all', None)
@@ -177,7 +177,7 @@ class ReportGenerator(GeraldoObject):
                 'height': self.calculate_size(band.height),
                 }
         return band_rect
- 
+
     def make_widget_rect(self, widget, band_rect):
         """Returns the right widget rect on the PDF canvas"""
         widget_rect = {
@@ -412,7 +412,7 @@ class ReportGenerator(GeraldoObject):
         if Decimal(str(self.get_available_height())) < Decimal(str(height)):
             self.start_new_page()
             return True
-        
+
         return False
 
     def append_new_page(self):
@@ -524,14 +524,14 @@ class ReportGenerator(GeraldoObject):
         self._current_page_number += 1
         self._is_first_page = False
         self.update_top_pos(set_position=0) # <---- update top position
- 
+
     def render_bands(self):
         """Loops into the objects list to create the report pages until the end"""
- 
+
         # Preparing local auxiliar variables
         self._current_page_number = self.report.first_page_number
         self._current_object_index = 0
-        objects = self.report.get_objects_list()
+        objects = self.report.get_objects_iter()
 
         # just an alias to make it shorter
         d_band = self.report.band_detail
@@ -543,6 +543,8 @@ class ReportGenerator(GeraldoObject):
             self.render_end_current_page()
 
         # Loop for pages
+        print 'objects array len is %s' % len(objects)
+
         while self._current_object_index < len(objects):
             # Starts a new page and generates the page header band
             self.start_new_page()
@@ -559,18 +561,21 @@ class ReportGenerator(GeraldoObject):
             # Loop for objects to go into grid on current page
             while self._current_object_index < len(objects):
                 # Get current object from list
-                self._current_object = objects[self._current_object_index]
+                self._previous_object = self._current_object
+                print 'getting object %s' % self._current_object_index
+                self._current_object = objects.next()
+#                 self._current_object = objects[self._current_object_index]
 
                 # Renders group bands for changed values
                 self.calc_changed_groups(first_object_on_page)
 
                 if not first_object_on_page:
-                    # The current_object of the groups' footers is the previous 
+                    # The current_object of the groups' footers is the previous
                     # object, so we have access, in groups' footers, to the last
                     # object before the group breaking
-                    self._current_object = objects[self._current_object_index-1]
-                    self.render_groups_footers()
-                    self._current_object = objects[self._current_object_index]
+#                     self._current_object = objects[self._current_object_index-1]
+                    self.render_groups_footers(current_object=self._previous_object)
+#                     self._current_object = objects[self._current_object_index]
 
                 self.render_groups_headers(first_object_on_page)
 
@@ -640,7 +645,7 @@ class ReportGenerator(GeraldoObject):
         return sum(args)
 
     def get_top_pos(self):
-        """We use this to use this to get the current top position, 
+        """We use this to use this to get the current top position,
         considering also the top margin."""
         ret = self.calculate_size(self.report.margin_top) + self._current_top_position
 
@@ -668,7 +673,7 @@ class ReportGenerator(GeraldoObject):
         decreasing or setting it with a new value."""
         if set_position is not None:
             self._current_top_position = set_position
-        else:        
+        else:
             self._current_top_position += increase
             self._current_top_position -= decrease
 
@@ -679,7 +684,7 @@ class ReportGenerator(GeraldoObject):
         decreasing or setting it with a new value."""
         if set_position is not None:
             self._current_left_position = set_position
-        else:        
+        else:
             self._current_left_position += increase
             self._current_left_position -= decrease
 
@@ -707,7 +712,7 @@ class ReportGenerator(GeraldoObject):
     def set_fill_color(self, color):
         """Sets the current fill on canvas. Used for fonts and shape fills"""
         pass
-    
+
     def set_stroke_color(self, color):
         """Sets the current stroke on canvas"""
         pass
@@ -767,9 +772,11 @@ class ReportGenerator(GeraldoObject):
                 if group.band_header and group.band_header.visible:
                     self.render_band(group.band_header)
 
-    def render_groups_footers(self, force=False):
+    def render_groups_footers(self, force=False, current_object=None):
         """Renders the report footers using previous 'changed' definition calculated by
         'calc_changed_groups'"""
+
+        current_object = current_object or self._current_object
 
         # Loops on groups to render changed ones
         for group in reversed(self.report.groups):
@@ -778,7 +785,7 @@ class ReportGenerator(GeraldoObject):
                           self._groups_stack[-1] == group ):
                 if group.band_footer and group.band_footer.visible:
                     self.force_blank_page_by_height(self.calculate_size(group.band_footer.height))
-                    self.render_band(group.band_footer)
+                    self.render_band(group.band_footer, current_object=current_object)
 
                 if self._groups_stack:
                     self._groups_working_values.pop(self._groups_stack[-1])
@@ -820,7 +827,7 @@ class ReportGenerator(GeraldoObject):
     def render_subreports(self):
         """Renders subreports bands for the current object in, usings its
         own queryset.
-        
+
         For a while just the detail band is rendered. Maybe in future we
         change this to accept header and footer."""
 
@@ -893,7 +900,7 @@ class ReportGenerator(GeraldoObject):
             if hasattr(self.filename, 'write') and callable(self.filename.write):
                 self.filename.write(buffer)
                 return True
-                
+
             # Write to file path
             elif isinstance(self.filename, basestring):
                 fp = file(self.filename, 'w')
