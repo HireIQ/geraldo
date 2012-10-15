@@ -532,6 +532,7 @@ class ReportGenerator(GeraldoObject):
         self._current_page_number = self.report.first_page_number
         self._current_object_index = 0
         objects = self.report.get_objects_iter()
+        objects_iter = iter(objects)
 
         # just an alias to make it shorter
         d_band = self.report.band_detail
@@ -543,8 +544,6 @@ class ReportGenerator(GeraldoObject):
             self.render_end_current_page()
 
         # Loop for pages
-        print 'objects array len is %s' % len(objects)
-
         while self._current_object_index < len(objects):
             # Starts a new page and generates the page header band
             self.start_new_page()
@@ -562,8 +561,7 @@ class ReportGenerator(GeraldoObject):
             while self._current_object_index < len(objects):
                 # Get current object from list
                 self._previous_object = self._current_object
-                print 'getting object %s' % self._current_object_index
-                self._current_object = objects.next()
+                self._current_object = objects_iter.next()
 #                 self._current_object = objects[self._current_object_index]
 
                 # Renders group bands for changed values

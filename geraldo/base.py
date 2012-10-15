@@ -215,44 +215,39 @@ class BaseReport(GeraldoObject):
         self.groups = [isinstance(group, ReportGroup) and group or group() for group in groups]
 
     def get_objects_iter(self):
+        from django.core.paginator import Paginator
         from django.db.models.query import QuerySet
         import itertools
 
         class IterQueryset(object):
 
             def __init__(self, queryset, chunk_size=100):
-                self.queryset = queryset
-                self.chunk_size = chunk_size
-                self.total_rows = queryset.count()
-                if self.chunk_size > self.total_rows:
-                    self.chunk_size = self.total_rows
-                self.total_chunks = self.total_rows / self.chunk_size
-                if self.total_chunks * self.chunk_size < self.total_rows:
-                    self.total_chunks += 1
-                self.current_chunk = 0
-                self.current_row = 0
-                print 'chunk size is %s' % self.chunk_size
-                self.queryset_result = list(self.queryset[0:self.chunk_size])
+                if chunk_size > queryset.count():
+                    chunk_size = queryset.count()
+                self.paginator = Paginator(queryset, chunk_size)
+                self.current_page = self.paginator.page(1)
+                self.current_index = 0
+                self.page_index = 0
 
             def __iter__(self):
                 return self
 
             def __len__(self):
-                return self.total_rows
+                return self.paginator.count
 
             def next(self):
-                print 'current_row is %s and current_chunk is %s' % (self.current_row, self.current_chunk)
-                if self.current_chunk * self.chunk_size + self.current_row >= self.total_rows:
-                    raise StopIteration
-                if self.current_row >= self.chunk_size:
-                    self.current_row = 0
-                    self.current_chunk += 1
-                    if (self.current_chunk + 1) * self.chunk_size > self.total_rows:
-                        self.queryset_result = list(self.queryset[self.chunk_size * self.current_chunk:self.total_rows])
+                if self.current_index >= self.current_page.end_index():
+                    if self.current_page.has_next():
+                        print 'Processing page %s of %s' % (self.current_page.next_page_number(), self.paginator.num_pages)
+                        self.current_page = self.paginator.page(self.current_page.next_page_number())
+                        self.page_index = 0
                     else:
-                        self.queryset_result = list(self.queryset[self.chunk_size * self.current_chunk:self.chunk_size * (self.current_chunk + 1)])
-                self.current_row += 1
-                return self.queryset_result[self.current_row]
+                        raise StopIteration
+
+                ret = self.current_page.object_list[self.page_index]
+                self.current_index += 1
+                self.page_index += 1
+                return ret
 
         if isinstance(self.queryset, QuerySet):
             return IterQueryset(self.queryset)
