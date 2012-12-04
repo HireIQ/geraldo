@@ -221,7 +221,7 @@ class BaseReport(GeraldoObject):
 
         class IterQueryset(object):
 
-            def __init__(self, queryset, chunk_size=100):
+            def __init__(self, queryset, chunk_size=1000):
                 if chunk_size > queryset.count():
                     chunk_size = queryset.count()
                 self.paginator = Paginator(queryset, chunk_size)
