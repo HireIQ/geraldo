@@ -116,5 +116,5 @@ class CSVGenerator(ReportGenerator):
             # Next object
             self._current_object_index += 1
 
-            self.writer.writerow(cells)
+            self.writer.writerow([cell.encode("utf-8") for cell in cells])
 
