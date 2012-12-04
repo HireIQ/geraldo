@@ -79,7 +79,9 @@ class CSVGenerator(ReportGenerator):
         """Generates the CSV output"""
 
         self._current_object_index = 0
-        objects = self.report.get_objects_list()
+        # objects = self.report.get_objects_list()
+        objects = self.report.get_objects_iter()
+        objects_iter = iter(objects)
 
         self.start_writer()
 
@@ -94,7 +96,8 @@ class CSVGenerator(ReportGenerator):
 
         while self._current_object_index < len(objects):
             # Get current object from list
-            self._current_object = objects[self._current_object_index]
+            # self._current_object = objects[self._current_object_index]
+            self._current_object = objects_iter.next()
 
             cells = []
 
