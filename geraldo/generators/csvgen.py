@@ -95,7 +95,7 @@ class CSVGenerator(ReportGenerator):
 #        while self._current_object_index < len(objects):
             # Get current object from list
 #            self._current_object = objects[self._current_object_index]
-        for row in self.report.get_objects_list()
+        for row in self.report.get_objects_list():
 
             cells = []
 
