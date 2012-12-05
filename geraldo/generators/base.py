@@ -531,8 +531,8 @@ class ReportGenerator(GeraldoObject):
         # Preparing local auxiliar variables
         self._current_page_number = self.report.first_page_number
         self._current_object_index = 0
-        objects = self.report.get_objects_iter()
-        objects_iter = iter(objects)
+        objects = self.report.get_objects_list()
+        object_count = self.report.get_object_count()
 
         # just an alias to make it shorter
         d_band = self.report.band_detail
@@ -544,7 +544,7 @@ class ReportGenerator(GeraldoObject):
             self.render_end_current_page()
 
         # Loop for pages
-        while self._current_object_index < len(objects):
+        while self._current_object_index < object_count:
             # Starts a new page and generates the page header band
             self.start_new_page()
             first_object_on_page = True
@@ -555,14 +555,13 @@ class ReportGenerator(GeraldoObject):
 
             # Does generate objects if there is no details band
             if not d_band:
-                self._current_object_index = len(objects)
+                self._current_object_index = object_count
 
             # Loop for objects to go into grid on current page
-            while self._current_object_index < len(objects):
+            while self._current_object_index < object_count:
                 # Get current object from list
                 self._previous_object = self._current_object
-                self._current_object = objects_iter.next()
-#                 self._current_object = objects[self._current_object_index]
+                self._current_object = objects.next()
 
                 # Renders group bands for changed values
                 self.calc_changed_groups(first_object_on_page)
@@ -571,9 +570,7 @@ class ReportGenerator(GeraldoObject):
                     # The current_object of the groups' footers is the previous
                     # object, so we have access, in groups' footers, to the last
                     # object before the group breaking
-#                     self._current_object = objects[self._current_object_index-1]
                     self.render_groups_footers(current_object=self._previous_object)
-#                     self._current_object = objects[self._current_object_index]
 
                 self.render_groups_headers(first_object_on_page)
 
@@ -606,11 +603,11 @@ class ReportGenerator(GeraldoObject):
                             break
 
                     # ... or this band forces a new page and this is not the last object in objects list
-                    elif d_band.force_new_page and self._current_object_index < len(objects):
+                    elif d_band.force_new_page and self._current_object_index < object_count:
                         break
 
             # Sets this is the latest page or not
-            self._is_latest_page = self._current_object_index >= len(objects)
+            self._is_latest_page = self._current_object_index >= object_count
 
             # Renders the finish group footer bands
             if self._is_latest_page:

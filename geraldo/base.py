@@ -269,6 +269,11 @@ class BaseReport(GeraldoObject):
             return IterQueryset(self.queryset)
         return self.queryset
 
+    def get_object_count(self):
+        if not self.queryset:
+            return 0
+        return self.queryset.count()
+
     def get_objects_list(self):
         """Returns the list with objects to be rendered.
 
