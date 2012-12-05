@@ -12,6 +12,22 @@ from exceptions import EmptyQueryset, ObjectNotFound, ManyObjectsFound,\
         AttributeNotFound, NotYetImplemented
 from cache import DEFAULT_CACHE_STATUS, CACHE_BACKEND, CACHE_FILE_ROOT
 
+def block_iterator(queryset, block=1000):
+    """
+    A memory efficient iterator for a queryset.
+
+    Given a query set and an optional `block` size,
+    perform queries of `block` elements at a time
+    to reduce memory footprint.
+    """
+    count = queryset.count()
+    num_selects = (count / block) + 1
+    for x in xrange(num_selects):
+        start = x * block
+        end = start + block
+        for element in list(queryset[start:end]):
+            yield element
+
 class GeraldoObject(object):
     """Base class inherited by all report classes, including band, subreports,
     groups, graphics and widgets.
@@ -261,7 +277,8 @@ class BaseReport(GeraldoObject):
         if not self.queryset:
             return []
 
-        return list(self.queryset)
+        #return list(self.queryset)
+        return block_iterator(self.queryset.all())
 
     def format_date(self, date, expression):
         """Use a date format string method to return formatted datetime.

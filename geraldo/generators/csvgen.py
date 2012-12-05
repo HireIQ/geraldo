@@ -78,10 +78,8 @@ class CSVGenerator(ReportGenerator):
     def generate_csv(self):
         """Generates the CSV output"""
 
-        self._current_object_index = 0
-        # objects = self.report.get_objects_list()
-        objects = self.report.get_objects_iter()
-        objects_iter = iter(objects)
+#        self._current_object_index = 0
+#        objects = self.report.get_objects_list()
 
         self.start_writer()
 
@@ -94,10 +92,10 @@ class CSVGenerator(ReportGenerator):
             cells = [(col.name or col.expression or col.attribute_name) for col in columns]
             self.writer.writerow(cells)
 
-        while self._current_object_index < len(objects):
+#        while self._current_object_index < len(objects):
             # Get current object from list
-            # self._current_object = objects[self._current_object_index]
-            self._current_object = objects_iter.next()
+#            self._current_object = objects[self._current_object_index]
+        for row in self.report.get_objects_list()
 
             cells = []
 
@@ -108,7 +106,8 @@ class CSVGenerator(ReportGenerator):
                 widget.font_color = self.report.default_font_color
 
                 # Set widget basic attributes
-                widget.instance = self._current_object
+                widget.instance = row
+#                widget.instance = self._current_object
                 widget.generator = self
                 widget.report = self.report
                 widget.band = self.report.band_detail
@@ -117,7 +116,7 @@ class CSVGenerator(ReportGenerator):
                 cells.append(widget.text)
 
             # Next object
-            self._current_object_index += 1
+#            self._current_object_index += 1
 
             self.writer.writerow([cell.encode("utf-8") for cell in cells])
 
