@@ -12,6 +12,7 @@ from exceptions import EmptyQueryset, ObjectNotFound, ManyObjectsFound,\
         AttributeNotFound, NotYetImplemented
 from cache import DEFAULT_CACHE_STATUS, CACHE_BACKEND, CACHE_FILE_ROOT
 
+#TODO use the block_iterator method in py/toomah/lib/queryutils
 def block_iterator(queryset, block=1000):
     """
     A memory efficient iterator for a queryset.
