@@ -90,7 +90,7 @@ class CSVGenerator(ReportGenerator):
         # First row with column names
         if self.first_row_with_column_names:
             cells = [(col.name or col.expression or col.attribute_name) for col in columns]
-            self.writer.writerow([cell.encode("utf-8") for cell in cells])
+            self.writer.writerow(cells)
 
 #        while self._current_object_index < len(objects):
             # Get current object from list
