@@ -1,30 +1,31 @@
-import datetime, csv
+import unicodecsv
 from base import ReportGenerator
 
-from geraldo.utils import get_attr_value, calculate_size
-from geraldo.widgets import Widget, Label, SystemField, ObjectValue
-from geraldo.graphics import Graphic, RoundRect, Rect, Line, Circle, Arc,\
-        Ellipse, Image
-from geraldo.exceptions import AbortEvent
+from geraldo.widgets import ObjectValue
+
 
 class CSVGenerator(ReportGenerator):
-    """This is a generator to output data in CSV format. This format can be imported as a
-    spreadsheet to Excel, OpenOffice Calc, Google Docs Spreadsheet, and others.
+    """This is a generator to output data in CSV format. This format can be
+        imported as a spreadsheet to Excel, OpenOffice Calc,
+        Google Docs Spreadsheet, and others.
 
     Attributes:
 
-        * 'filename' - is the file path you can inform optionally to save text to.
-        * 'writer' - is csv.writer function you can inform manually to make it customizable.
-                     This function must expects a first argument to receive a file object and
-                     returns a csv.writer object.
+        * 'filename' - is the file path you can inform optionally to save
+                       text to.
+        * 'writer' - is unicodecsv.writer function you can inform manually to
+                     make it customizable. This function must expects a first
+                     argument to receive a file object and returns a
+                     unicodecsv.writer object.
     """
     writer = None
-    writer_function = csv.writer
+    writer_function = unicodecsv.writer
     first_row_with_column_names = False
 
     mimetype = 'text/csv'
 
-    def __init__(self, report, cache_enabled=None, writer=None, first_row_with_column_names=None, **kwargs):
+    def __init__(self, report, cache_enabled=None, writer=None,
+                 first_row_with_column_names=None, **kwargs):
         super(CSVGenerator, self).__init__(report, **kwargs)
 
         # Cache enabled
@@ -36,12 +37,13 @@ class CSVGenerator(ReportGenerator):
         # Sets the writer function
         self.writer = writer or self.writer
 
-        # Sets to append the first row with column names (ObjectValue name/attribute_name/expression)
+        # Sets to append the first row with column names
+        # (ObjectValue name/attribute_name/expression)
         if first_row_with_column_names is not None:
             self.first_row_with_column_names = first_row_with_column_names
 
         # Additional attributes
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             setattr(self, k, v)
 
     def start_writer(self, filename=None):
@@ -54,7 +56,8 @@ class CSVGenerator(ReportGenerator):
             filename = file(filename, 'w')
 
         # Default writer uses comma as separator and quotes only when necessary
-        self.writer = self.writer_function(filename, quoting=csv.QUOTE_MINIMAL)
+        self.writer = self.writer_function(filename,
+                                           quoting=unicodecsv.QUOTE_MINIMAL)
 
     def execute(self):
         super(CSVGenerator, self).execute()
@@ -84,12 +87,14 @@ class CSVGenerator(ReportGenerator):
         self.start_writer()
 
         # Make a sorted list of columns
-        columns = [el for el in self.report.band_detail.elements if isinstance(el, ObjectValue)]
-        columns.sort(lambda a,b: cmp(a.left, b.left) or cmp(a.width, b.width))
+        columns = [el for el in self.report.band_detail.elements
+                   if isinstance(el, ObjectValue)]
+        columns.sort(lambda a, b: cmp(a.left, b.left) or cmp(a.width, b.width))
 
         # First row with column names
         if self.first_row_with_column_names:
-            cells = [(col.name or col.expression or col.attribute_name) for col in columns]
+            cells = [(col.name or col.expression or col.attribute_name)
+                     for col in columns]
             self.writer.writerow(cells)
 
 #        while self._current_object_index < len(objects):
