@@ -1,9 +1,9 @@
 import copy, types 
 
-try: 
-    set 
-except NameError: 
-    from sets import Set as set     # Python 2.3 fallback 
+try:
+    set
+except NameError:
+    from sets import Set as set     # Python 2.3 fallback
 
 from .utils import calculate_size, get_attr_value, landscape, format_date, memoize,\
         BAND_WIDTH, BAND_HEIGHT, CROSS_COLS, CROSS_ROWS, cm, A4, black, TA_LEFT, TA_CENTER,\
@@ -15,12 +15,29 @@ from .cache import DEFAULT_CACHE_STATUS, CACHE_BACKEND, CACHE_FILE_ROOT
 def unicode(o):
     return o
 
+#TODO use the block_iterator method in py/toomah/lib/queryutils
+def block_iterator(queryset, block=1000):
+    """
+    A memory efficient iterator for a queryset.
+
+    Given a query set and an optional `block` size,
+    perform queries of `block` elements at a time
+    to reduce memory footprint.
+    """
+    count = queryset.count()
+    num_selects = (count / block) + 1
+    for x in xrange(num_selects):
+        start = x * block
+        end = start + block
+        for element in list(queryset[start:end]):
+            yield element
+
 class GeraldoObject(object):
     """Base class inherited by all report classes, including band, subreports,
     groups, graphics and widgets.
-    
+
     Attributes:
-        
+
         * parent - this is setted by its parent when it is initializing. There
           is no automated way to get it."""
 
@@ -50,9 +67,9 @@ class GeraldoObject(object):
     def find_by_name(self, name, many=False):
         """Find child by informed name (and raises an exception if doesn't
         find).
-        
+
         Attributes:
-            
+
             * name - object name to find
             * many - boolean attribute that means it returns many objects
               or not - in the case there are more than one object with the
@@ -82,7 +99,7 @@ class GeraldoObject(object):
         # Found nothing
         if not found:
             raise ObjectNotFound('There is no child with name "%s"'%name)
-        
+
         # Found many
         elif len(found) > 1 and not many:
             raise ManyObjectsFound('There are many childs with name "%s"'%name)
@@ -92,9 +109,9 @@ class GeraldoObject(object):
     def find_by_type(self, typ):
         """Find child by informed type (and raises an exception if doesn't
         find).
-        
+
         Attributes:
-            
+
             * typ - class type to find
         """
         found = []
@@ -170,7 +187,7 @@ class BaseReport(GeraldoObject):
     default_stroke_color = black
     default_fill_color = black
     borders = None
-    
+
     # Events (don't make a method with their names, override 'do_*' instead)
     before_print = None         # |     before render
     before_generate = None      # |     after render / before generate
@@ -217,22 +234,28 @@ class BaseReport(GeraldoObject):
         groups = self.groups
         self.groups = [isinstance(group, ReportGroup) and group or group() for group in groups]
 
+    def get_object_count(self):
+        if not self.queryset:
+            return 0
+        return self.queryset.count()
+
     def get_objects_list(self):
         """Returns the list with objects to be rendered.
-        
+
         This should be refactored in the future to support big amounts of
         objects."""
         if not self.queryset:
             return []
 
-        return list(self.queryset)
+        #return list(self.queryset)
+        return block_iterator(self.queryset.all())
 
     def format_date(self, date, expression):
         """Use a date format string method to return formatted datetime.
 
         You should override this method to force UTF-8 decode or something like
         this (until we find a better and agnosthic solution).
-        
+
         Please don't hack this method up. Just override it on your report class."""
 
         return format_date(date, expression)
@@ -330,7 +353,7 @@ _registered_report_classes = []
 
 class ReportMetaclass(type):
     """This metaclass registers the declared classes to a local variable."""
-    
+
     def __new__(cls, name, bases, attrs):
         # Merges default_style with inherited report classes
         if isinstance(attrs.get('default_style', None), dict):
@@ -365,10 +388,10 @@ def get_report_class_by_registered_id(reg_id):
 
 class Report(BaseReport):
     """This class must be inherited to be used as a new report.
-    
+
     A report has bands and is driven by a QuerySet. It can have a title and
     margins definitions.
-    
+
     Depends on ReportLab to work properly"""
 
     __metaclass__ = ReportMetaclass
@@ -425,7 +448,7 @@ class Report(BaseReport):
     def generate_by(self, generator_class, *args, **kwargs):
         """This method uses a generator inherited class to generate a report
         to a desired format, like XML, HTML or PDF, for example.
-        
+
         The arguments *args and **kwargs are passed to class initializer."""
 
         # Check empty queryset and raises an error if this is not acceptable
@@ -440,10 +463,10 @@ class Report(BaseReport):
     def generate_under_process_by(self, generator_class, *args, **kwargs):
         """Uses the power of multiprocessing library to run report generation under
         a Process and save memory consumming, with better use of multi-core servers.
-        
+
         This just will work well if you are generating in a destination file or
         file-like object (i.e. an HttpResponse on Django).
-        
+
         It doesn't returns nothing because Process doesn't."""
 
         import tempfile, random, os
@@ -522,13 +545,13 @@ class Report(BaseReport):
 
 class SubReport(BaseReport):
     """Class to be used for subreport objects. It doesn't need to be inherited.
-    
+
     - 'queryset_string' must be a string with path for Python compatible queryset.
     - 'get_queryset' is an optional lambda attribute can be used in replacement to
       queryset_string to make more dynamic querysets
-    
+
     Examples:
-    
+
         * '%(object)s.user_permissions.all()'
         * '%(object)s.groups.all()'
         * 'Message.objects.filter(user=%(object)s)'
@@ -649,7 +672,7 @@ class ReportBand(GeraldoObject):
     default_style = None
     auto_expand_height = False
     is_detail = False
-    
+
     # Events (don't make a method with their names, override 'do_*' instead)
     before_print = None
     after_print = None
@@ -673,7 +696,7 @@ class ReportBand(GeraldoObject):
         """Finds all child band classes in this class and instantiante them. This
         is important to have a safety on separe inherited reports each one
         from other."""
-        
+
         child_bands = self.child_bands
         self.child_bands = [isinstance(child, ReportBand) and child or child()
                 for child in child_bands]
@@ -732,10 +755,10 @@ class ReportBand(GeraldoObject):
 
 class DetailBand(ReportBand):
     """You should use this class instead of ReportBand in detail bands.
-    
+
     It is useful when you want to have detail band with strict width, with
     margins or displayed inline like labels.
-    
+
      * display_inline: use it together attribute 'width' to specify that you
        want to make many detail bands per line. Useful to make labels."""
 
@@ -774,10 +797,10 @@ class ReportGroup(GeraldoObject):
         """Finds all band classes in this class and instantiante them. This
         is important to have a safety on separe inherited reports each one
         from other."""
-        
+
         if self.band_header and not isinstance(self.band_header, ReportBand):
             self.band_header = self.band_header()
-        
+
         if self.band_footer and not isinstance(self.band_footer, ReportBand):
             self.band_footer = self.band_footer()
 
@@ -796,7 +819,7 @@ class ReportGroup(GeraldoObject):
         # Bands
         if self.band_header: self.band_header.parent = self
         if self.band_footer: self.band_footer.parent = self
-    
+
 class Element(GeraldoObject):
     """The base class for widgets and graphics"""
     left = 0
@@ -804,7 +827,7 @@ class Element(GeraldoObject):
     _width = 0
     _height = 0
     visible = True
-    
+
     # Events (don't make a method with their names, override 'do_*' instead)
     before_print = None
     after_print = None
