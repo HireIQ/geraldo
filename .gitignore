@@ -2,6 +2,7 @@
 .*.swp
 .svn
 .bzr
+.python-version
 geraldo/tests/output/*.pdf
 geraldo/tests/output/*.txt
 geraldo/tests/output/*.png

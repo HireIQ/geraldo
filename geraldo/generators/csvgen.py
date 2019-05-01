@@ -1,8 +1,10 @@
 import datetime
+
 import unicodecsv
-from base import ReportGenerator
 
 from geraldo.widgets import ObjectValue
+
+from .base import ReportGenerator
 
 
 class CSVGenerator(ReportGenerator):
