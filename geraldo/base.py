@@ -1,4 +1,6 @@
-import copy, types 
+import copy, types
+
+from six.moves import range
 
 try:
     set
@@ -25,8 +27,8 @@ def block_iterator(queryset, block=1000):
     to reduce memory footprint.
     """
     count = queryset.count()
-    num_selects = (count / block) + 1
-    for x in xrange(num_selects):
+    num_selects = (count // block) + 1
+    for x in range(num_selects):
         start = x * block
         end = start + block
         for element in list(queryset[start:end]):
@@ -996,4 +998,3 @@ class ManyElements(GeraldoObject):
             _elements.append(el)
 
         return _elements
-

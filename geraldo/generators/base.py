@@ -561,7 +561,8 @@ class ReportGenerator(GeraldoObject):
             while self._current_object_index < object_count:
                 # Get current object from list
                 self._previous_object = self._current_object
-                self._current_object = objects.next()
+                from six import next
+                self._current_object = next(objects)
 
                 # Renders group bands for changed values
                 self.calc_changed_groups(first_object_on_page)

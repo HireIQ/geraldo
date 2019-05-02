@@ -56,7 +56,7 @@ class CSVGenerator(ReportGenerator):
         filename = filename or self.filename
 
         if isinstance(filename, str):
-            filename = file(filename, 'w')
+            filename = open(filename, 'w+b')
 
         # Default writer uses comma as separator and quotes only when necessary
         self.writer = self.writer_function(filename,
@@ -92,7 +92,7 @@ class CSVGenerator(ReportGenerator):
         # Make a sorted list of columns
         columns = [el for el in self.report.band_detail.elements
                    if isinstance(el, ObjectValue)]
-        columns.sort(lambda a, b: cmp(a.left, b.left) or cmp(a.width, b.width))
+        columns.sort(key=lambda a: a.left)
 
         # First row with column names
         if self.first_row_with_column_names:
