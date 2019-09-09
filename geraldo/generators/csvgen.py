@@ -1,5 +1,6 @@
 import datetime
 
+import six
 import unicodecsv
 
 from geraldo.widgets import ObjectValue
@@ -126,4 +127,7 @@ class CSVGenerator(ReportGenerator):
             # Next object
 #            self._current_object_index += 1
 
-            self.writer.writerow([cell.encode("utf-8") for cell in cells])
+            if six.PY2:
+                self.writer.writerow([cell.encode("utf-8") for cell in cells])
+            else:
+                self.writer.writerow(cells)
