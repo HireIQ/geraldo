@@ -196,7 +196,7 @@ class ObjectValue(Label):
     def action_count(self, attribute_name=None):
         # Returns the total count of objects with valid values on informed attribute
         values = self.get_queryset_values(attribute_name)
-        return len(filter(lambda v: v is not None, values))
+        return len(list(filter(lambda v: v is not None, values)))
 
     def action_avg(self, attribute_name=None):
         values = self.get_queryset_values(attribute_name)
