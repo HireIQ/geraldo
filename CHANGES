@@ -1,7 +1,12 @@
-PENDING: Version 0.4.20
+2020-10-05: Version 0.4.21
 --------------------------------
 
 * #7 Output a BOM in CSV files by default, for MS Excel
+
+2019-09-09: Version 0.4.20
+--------------------------------
+
+* Fix encoding in py2 vs py3
 
 2019-09-09: Version 0.4.19-stable
 --------------------------------
