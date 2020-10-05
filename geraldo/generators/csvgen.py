@@ -46,6 +46,9 @@ class CSVGenerator(ReportGenerator):
         if first_row_with_column_names is not None:
             self.first_row_with_column_names = first_row_with_column_names
 
+        # utf-8-sig writes a BOM whereas utf-8 does not
+        self.encoding = "utf-8-sig"
+
         # Additional attributes
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -60,8 +63,9 @@ class CSVGenerator(ReportGenerator):
             filename = open(filename, 'w+b')
 
         # Default writer uses comma as separator and quotes only when necessary
-        self.writer = self.writer_function(filename,
-                                           quoting=unicodecsv.QUOTE_MINIMAL)
+        self.writer = self.writer_function(
+            filename, quoting=unicodecsv.QUOTE_MINIMAL, encoding=self.encoding
+        )
 
     def execute(self):
         super(CSVGenerator, self).execute()
