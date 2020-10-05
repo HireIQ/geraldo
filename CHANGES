@@ -1,3 +1,18 @@
+PENDING: Version 0.4.20
+--------------------------------
+
+* #7 Output a BOM in CSV files by default, for MS Excel
+
+2019-09-09: Version 0.4.19-stable
+--------------------------------
+
+* Additional unicode fixes.
+
+2017-11-10: Version 0.4.18-stable
+--------------------------------
+
+* Use unicodecsv for CSV output of UTF-8 encoded unicode characters
+
 2011-06-13: Version 0.4.13-stable
 --------------------------------
 
@@ -44,7 +59,7 @@
 
 2010-06-17: Version 0.4.4-stable
 --------------------------------
-* Fixed bug on complex expressions with braces 
+* Fixed bug on complex expressions with braces
 
 2010-05-06: Version 0.4.3-stable
 --------------------------------
