@@ -1,7 +1,5 @@
+import csv
 import datetime
-
-import six
-import unicodecsv
 
 from geraldo.widgets import ObjectValue
 
@@ -17,13 +15,13 @@ class CSVGenerator(ReportGenerator):
 
         * 'filename' - is the file path you can inform optionally to save
                        text to.
-        * 'writer' - is unicodecsv.writer function you can inform manually to
+        * 'writer' - is csv.writer function you can inform manually to
                      make it customizable. This function must expects a first
                      argument to receive a file object and returns a
-                     unicodecsv.writer object.
+                     csv.writer object.
     """
     writer = None
-    writer_function = unicodecsv.writer
+    writer_function = csv.writer
     first_row_with_column_names = False
 
     mimetype = 'text/csv'
@@ -60,11 +58,11 @@ class CSVGenerator(ReportGenerator):
         filename = filename or self.filename
 
         if isinstance(filename, str):
-            filename = open(filename, 'w+b')
+            filename = open(filename, 'w+', encoding=self.encoding)
 
         # Default writer uses comma as separator and quotes only when necessary
         self.writer = self.writer_function(
-            filename, quoting=unicodecsv.QUOTE_MINIMAL, encoding=self.encoding
+            filename, quoting=csv.QUOTE_MINIMAL,
         )
 
     def execute(self):
@@ -131,7 +129,4 @@ class CSVGenerator(ReportGenerator):
             # Next object
 #            self._current_object_index += 1
 
-            if six.PY2:
-                self.writer.writerow([cell.encode("utf-8") for cell in cells])
-            else:
-                self.writer.writerow(cells)
+            self.writer.writerow(cells)
