@@ -1,3 +1,10 @@
+2020-12-03: Version 0.4.22
+--------------------------------
+
+* Fix CSV file BOM related bug
+* Use python csv module instead of unicodecsv
+* Remove a six reference
+
 2020-10-05: Version 0.4.21
 --------------------------------
 

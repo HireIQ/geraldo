@@ -12,7 +12,7 @@ from setuptools import setup
 
 setup(
     name = 'Geraldo',
-    version = '0.4.21',
+    version = '0.4.22',
     description = 'Geraldo is a reports engine for Python and Django applications',
     long_description = 'Geraldo is a Python and Django pluggable application that works with ReportLab to generate complex reports.',
     author = 'Marinho Brandao',
