@@ -31,7 +31,7 @@ def block_iterator(queryset, block=1000):
     for x in range(num_selects):
         start = x * block
         end = start + block
-        for element in list(queryset[start:end]):
+        for element in list(queryset.all()[start:end]):
             yield element
 
 class GeraldoObject(object):
@@ -250,7 +250,7 @@ class BaseReport(GeraldoObject):
             return []
 
         #return list(self.queryset)
-        return block_iterator(self.queryset.all())
+        return block_iterator(self.queryset)
 
     def format_date(self, date, expression):
         """Use a date format string method to return formatted datetime.
